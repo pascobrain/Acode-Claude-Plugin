@@ -1,18 +1,16 @@
 import { createClient } from "./api.js";
 import { getSetting } from "./utils.js";
-import {
-  BASE_SYSTEM_PROMPT,
-  COMMANDS,
-} from "./constants.js";
+import { BASE_SYSTEM_PROMPT } from "./constants.js";
 
 let cachedClient = null;
 let cachedKey = null;
 
-/**
- * Return a cached Anthropic client for the configured API key, or null when no
- * key is set. The client is rebuilt automatically when the key changes.
- */
-export function getClient() {
+/** Active provider: "anthropic" (API key) or "openrouter" (OAuth sign-in). */
+export function getProvider() {
+  return getSetting("provider") === "openrouter" ? "openrouter" : "anthropic";
+}
+
+function anthropicClient() {
   const key = (getSetting("apiKey") || "").trim();
   if (!key) return null;
   if (!cachedClient || cachedKey !== key) {
@@ -22,32 +20,46 @@ export function getClient() {
   return cachedClient;
 }
 
-/** Drop the cached client (call when settings change). */
+/** Drop the cached Anthropic client (call when the key/provider changes). */
 export function resetClient() {
   cachedClient = null;
   cachedKey = null;
 }
 
+/** Whether the active provider currently has usable credentials. */
+export function isConnected() {
+  return getProvider() === "openrouter"
+    ? !!(getSetting("openrouterKey") || "").trim()
+    : !!(getSetting("apiKey") || "").trim();
+}
+
 /**
- * Ensure an API key is configured. When missing, warn the user, point them at
- * the settings page, and return null.
+ * Connection descriptor for the active provider, or null (after warning the
+ * user) when credentials are missing.
+ * @returns {{provider:"anthropic",client:object}|{provider:"openrouter",key:string}|null}
  */
-export function requireClient() {
-  const client = getClient();
+export function requireConnection() {
+  const provider = getProvider();
+  if (provider === "openrouter") {
+    const key = (getSetting("openrouterKey") || "").trim();
+    if (!key) {
+      acode.require("toast")(
+        "Sign in with OpenRouter first — run “Claude: Connect” or use the button in the chat.",
+        4000,
+      );
+      return null;
+    }
+    return { provider, key };
+  }
+  const client = anthropicClient();
   if (!client) {
     acode.require("toast")(
-      "Set your Anthropic API key in Claude AI plugin settings first.",
-      4000,
+      "Add your Anthropic API key in settings, or switch the provider to OpenRouter sign-in.",
+      5000,
     );
-    try {
-      acode.execCommand?.("open-plugin-settings", null, {
-        id: COMMANDS.OPEN_CHAT,
-      });
-    } catch {
-      /* best effort */
-    }
+    return null;
   }
-  return client;
+  return { provider: "anthropic", client };
 }
 
 /** Build the shared request options from current settings. */

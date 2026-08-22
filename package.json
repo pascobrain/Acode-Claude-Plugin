@@ -1,6 +1,6 @@
 {
   "name": "acode-claude-plugin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Chat with Claude (Anthropic) and run AI code actions directly inside the Acode editor.",
   "main": "dist/main.js",
   "repository": "https://github.com/CR4SH3UR/Acode-Claude-Plugin.git",

@@ -1,5 +1,5 @@
 import plugin from "../plugin.json";
-import { SIDEBAR_ID, MODELS, DEFAULTS } from "./constants.js";
+import { SIDEBAR_ID, MODELS, PROVIDERS, DEFAULTS } from "./constants.js";
 import { sidebar } from "./sidebar.js";
 import {
   registerCommands,
@@ -48,13 +48,29 @@ class ClaudeAIPlugin {
     return {
       list: [
         {
+          key: "provider",
+          text: "Provider",
+          value: getSetting("provider"),
+          select: PROVIDERS,
+          info: "How to reach Claude: your Anthropic API key, or sign in with OpenRouter (run “Claude: Connect”).",
+        },
+        {
           key: "apiKey",
           text: "Anthropic API key",
           value: getSetting("apiKey"),
           prompt: "sk-ant-...",
           promptType: "text",
-          info: "Create a key at console.anthropic.com. Stored locally on this device.",
+          info: "Used when the provider is “Anthropic”. Create a key at console.anthropic.com. Stored locally on this device.",
           valueText: (v) => (v ? "•••• set" : "not set"),
+        },
+        {
+          key: "openrouterKey",
+          text: "OpenRouter key",
+          value: getSetting("openrouterKey"),
+          prompt: "sk-or-...",
+          promptType: "text",
+          info: "Set automatically after “Claude: Connect”. You can also paste an sk-or-… key here.",
+          valueText: (v) => (v ? "•••• connected" : "not connected"),
         },
         {
           key: "model",
@@ -94,7 +110,11 @@ class ClaudeAIPlugin {
       cb: (key, value) => {
         if (key === "maxTokens") value = Number(value) || DEFAULTS.maxTokens;
         setSetting(key, value);
-        if (key === "apiKey") resetClient();
+        if (key === "apiKey" || key === "provider") resetClient();
+        if (key === "provider") {
+          sidebar.renderModelBadge?.();
+          sidebar.renderEmpty?.();
+        }
         if (key === "model") sidebar.renderModelBadge?.();
       },
     };

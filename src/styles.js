@@ -63,6 +63,28 @@ const CSS = `
   line-height: 1.5;
 }
 .claude-empty b { color: var(--claude-fg); }
+.claude-connect {
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  background: var(--claude-accent);
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.claude-connect:disabled { opacity: .6; }
+.claude-linkbtn {
+  display: block;
+  margin: 10px auto 0;
+  background: transparent;
+  border: none;
+  color: var(--link-text-color, #89b4fa);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 .claude-msg { display: flex; flex-direction: column; gap: 4px; }
 .claude-role {

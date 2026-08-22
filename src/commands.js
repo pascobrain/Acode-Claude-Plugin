@@ -1,7 +1,8 @@
 import { COMMANDS, CODE_ONLY_SYSTEM_PROMPT } from "./constants.js";
 import { sidebar } from "./sidebar.js";
-import { requireClient, chatOptions } from "./session.js";
-import { completeChat, describeError } from "./api.js";
+import { requireConnection, chatOptions } from "./session.js";
+import { completeChat, describeError } from "./chat.js";
+import { connectOpenRouter } from "./oauth.js";
 import {
   getSelectedText,
   getActiveFileContent,
@@ -49,8 +50,8 @@ function askInChat(question, { includeCode = true } = {}) {
  * instruction, then offer to replace it with the returned code.
  */
 async function transform(instruction) {
-  const client = requireClient();
-  if (!client) return;
+  const conn = requireConnection();
+  if (!conn) return;
 
   const src = selectionOrFile();
   if (!src) {
@@ -69,7 +70,7 @@ async function transform(instruction) {
       `Language: ${lang || "unknown"}\n\n` +
       fenced(src.code, lang);
 
-    const result = await completeChat(client, {
+    const result = await completeChat(conn, {
       ...opts,
       messages: [{ role: "user", content: userContent }],
     });
@@ -109,6 +110,14 @@ export const commandList = [
     bindKey: { win: "Ctrl-Shift-L", mac: "Cmd-Shift-L" },
     exec: () => {
       sidebar.open();
+      return true;
+    },
+  },
+  {
+    name: COMMANDS.CONNECT,
+    description: "Claude: Connect (sign in with OpenRouter)",
+    exec: async () => {
+      await connectOpenRouter();
       return true;
     },
   },

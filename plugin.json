@@ -3,7 +3,7 @@
   "id": "com.cr4sh3ur.claude",
   "name": "Claude AI",
   "main": "main.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "readme": "readme.md",
   "changelogs": "changelog.md",
   "repository": "https://github.com/CR4SH3UR/Acode-Claude-Plugin.git",

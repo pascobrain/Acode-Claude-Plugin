@@ -22,21 +22,33 @@ Chat with **Claude** (Anthropic) and run AI code actions without leaving the
 
 ## Setup
 
-1. Install the plugin.
-2. Get an API key from [console.anthropic.com](https://console.anthropic.com/).
-3. Open **Settings → Plugins → Claude AI** and paste your key into
-   **Anthropic API key**.
-4. Open the chat from the sidebar (the sparkle icon) or run
-   **Claude: Open chat** from the command palette.
+Pick one of two ways to connect:
 
-Your API key is stored locally on your device and is sent only to
-`api.anthropic.com`. Usage is billed to your own Anthropic account.
+**A. Sign in with OpenRouter (no API key to create)**
+
+1. Install the plugin and open the chat (sparkle icon in the sidebar).
+2. Tap **Sign in with OpenRouter** (or run **Claude: Connect**).
+3. Authorize in the in-app browser — the plugin receives a key automatically
+   and talks to Claude models through [OpenRouter](https://openrouter.ai).
+   Usage is billed to your OpenRouter account.
+
+**B. Anthropic API key (direct)**
+
+1. Get a key from [console.anthropic.com](https://console.anthropic.com/).
+2. Open **Settings → Plugins → Claude AI**, set **Provider** to
+   *Anthropic API key*, and paste your key into **Anthropic API key**.
+3. Usage is billed to your own Anthropic account.
+
+Keys are stored locally on your device. In direct mode requests go only to
+`api.anthropic.com`; in OpenRouter mode, only to `openrouter.ai`.
 
 ## Settings
 
 | Setting | Description |
 | --- | --- |
-| Anthropic API key | Your `sk-ant-…` key, stored on-device. |
+| Provider | Anthropic API key, or OpenRouter sign-in. |
+| Anthropic API key | Your `sk-ant-…` key, stored on-device (Anthropic provider). |
+| OpenRouter key | Set automatically after sign-in; or paste an `sk-or-…` key. |
 | Model | Which Claude model to use. |
 | Max output tokens | Upper bound on the length of each reply. |
 | Extended thinking | Let Claude reason before answering (shown collapsed). |

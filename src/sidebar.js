@@ -1,7 +1,8 @@
 import { SIDEBAR_ID } from "./constants.js";
 import { renderMarkdown } from "./markdown.js";
-import { requireClient, chatOptions } from "./session.js";
-import { streamChat, completeChat, extractText, describeError } from "./api.js";
+import { requireConnection, chatOptions, isConnected } from "./session.js";
+import { streamChat, completeChat, describeError } from "./chat.js";
+import { connectOpenRouter } from "./oauth.js";
 import {
   getSelectedText,
   getActiveFileContent,
@@ -107,9 +108,32 @@ class ChatSidebar {
     if (this.messages.length || !this.els.messages) return;
     this.els.messages.innerHTML = "";
     const empty = el("div", "claude-empty");
-    empty.innerHTML =
-      "<b>Claude AI</b><br>Ask a question, or attach the current file / selection " +
-      "with the buttons on the left, then send.";
+
+    if (!isConnected()) {
+      const title = el("div");
+      title.innerHTML = "<b>Welcome to Claude AI</b>";
+      const hint = el("div");
+      hint.style.margin = "8px 0 14px";
+      hint.textContent =
+        "Connect an account to start. Sign in with OpenRouter — no API key to create — or add an Anthropic API key in settings.";
+      const connect = el("button", "claude-connect", "Sign in with OpenRouter");
+      connect.onclick = async () => {
+        connect.disabled = true;
+        const ok = await connectOpenRouter();
+        connect.disabled = false;
+        if (ok) {
+          this.renderModelBadge();
+          this.renderEmpty();
+        }
+      };
+      const settings = el("button", "claude-linkbtn", "Use an Anthropic API key");
+      settings.onclick = () => this.openSettings();
+      empty.append(title, hint, connect, settings);
+    } else {
+      empty.innerHTML =
+        "<b>Claude AI</b><br>Ask a question, or attach the current file / selection " +
+        "with the buttons on the left, then send.";
+    }
     this.els.messages.append(empty);
   }
 
@@ -207,15 +231,15 @@ class ChatSidebar {
       acode.require("toast")("Claude is still responding — try again in a moment.", 3000);
       return;
     }
-    const client = requireClient();
-    if (!client) return;
+    const conn = requireConnection();
+    if (!conn) return;
     const apiUserContent = contextText
       ? `${contextText}\n\n${userText}`
       : userText;
     const display = contextText
       ? `${userText}\n\n_(with attached context)_`
       : userText;
-    this.runTurn(client, apiUserContent, display);
+    this.runTurn(conn, apiUserContent, display);
   }
 
   onSend() {
@@ -227,8 +251,8 @@ class ChatSidebar {
     const text = (input.value || "").trim();
     if (!text) return;
 
-    const client = requireClient();
-    if (!client) return;
+    const conn = requireConnection();
+    if (!conn) return;
 
     input.value = "";
     autoGrow(input);
@@ -242,14 +266,14 @@ class ChatSidebar {
       ? `${text}\n\n_(with ${this.contextSummary()})_`
       : text;
 
-    this.runTurn(client, userContent, displayContent);
+    this.runTurn(conn, userContent, displayContent);
   }
 
   contextSummary() {
     return "attached context";
   }
 
-  async runTurn(client, apiUserContent, displayContent) {
+  async runTurn(conn, apiUserContent, displayContent) {
     this.clearEmpty();
     this.addMessage("user", displayContent);
     this.messages.push({ role: "user", content: apiUserContent });
@@ -267,7 +291,7 @@ class ChatSidebar {
     try {
       if (opts.streaming) {
         this.stream = streamChat(
-          client,
+          conn,
           { ...opts, messages: this.messages },
           {
             onText: (delta) => {
@@ -282,11 +306,11 @@ class ChatSidebar {
             },
           },
         );
-        const finalMessage = await this.stream.done;
-        fullText = extractText(finalMessage) || fullText;
-        this.finishAssistant(assistant, streamEl, fullText, finalMessage);
+        const final = await this.stream.done;
+        fullText = final.text || fullText;
+        this.finishAssistant(assistant, streamEl, fullText, final);
       } else {
-        fullText = await completeChat(client, { ...opts, messages: this.messages });
+        fullText = await completeChat(conn, { ...opts, messages: this.messages });
         this.finishAssistant(assistant, streamEl, fullText, null);
       }
       this.messages.push({ role: "assistant", content: fullText });
@@ -313,7 +337,7 @@ class ChatSidebar {
     }
   }
 
-  finishAssistant(assistant, streamEl, fullText, finalMessage) {
+  finishAssistant(assistant, streamEl, fullText, final) {
     streamEl.remove();
     const rendered = renderMarkdown(fullText || "_(empty response)_", {
       onInsert: (code) => {
@@ -322,13 +346,12 @@ class ChatSidebar {
       },
     });
     assistant.body.append(rendered);
-    const usage = finalMessage?.usage;
-    if (usage) {
+    if (final?.outputTokens != null) {
       assistant.body.append(
         el(
           "div",
           "claude-meta",
-          `${usage.output_tokens} output tokens · ${finalMessage.model || ""}`,
+          `${final.outputTokens} output tokens · ${final.model || ""}`,
         ),
       );
     }

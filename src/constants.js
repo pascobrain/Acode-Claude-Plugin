@@ -3,6 +3,12 @@ import plugin from "../plugin.json";
 /** Stable plugin id, re-exported for convenience. */
 export const PLUGIN_ID = plugin.id;
 
+/** How the plugin authenticates with Claude. */
+export const PROVIDERS = [
+  ["anthropic", "Anthropic API key"],
+  ["openrouter", "OpenRouter (sign in)"],
+];
+
 /**
  * Models offered in the settings picker.
  * Values are the exact Anthropic model IDs — do not append date suffixes.
@@ -15,9 +21,23 @@ export const MODELS = [
   ["claude-fable-5", "Claude Fable 5 (most capable)"],
 ];
 
+/**
+ * Map the canonical model id to the OpenRouter slug (OpenRouter uses dotted
+ * version numbers and an `anthropic/` prefix). Falls back in openrouter.js.
+ */
+export const OPENROUTER_SLUGS = {
+  "claude-opus-5": "anthropic/claude-opus-5",
+  "claude-sonnet-5": "anthropic/claude-sonnet-5",
+  "claude-haiku-4-5": "anthropic/claude-haiku-4.5",
+  "claude-opus-4-8": "anthropic/claude-opus-4.8",
+  "claude-fable-5": "anthropic/claude-fable-5",
+};
+
 /** Default settings for a fresh install. */
 export const DEFAULTS = {
+  provider: "anthropic",
   apiKey: "",
+  openrouterKey: "",
   model: "claude-opus-5",
   maxTokens: 8192,
   extendedThinking: true,
@@ -49,6 +69,7 @@ export const SIDEBAR_ID = "claude-ai-chat";
 
 export const COMMANDS = {
   OPEN_CHAT: "claude:open-chat",
+  CONNECT: "claude:connect-openrouter",
   ASK: "claude:ask",
   EXPLAIN: "claude:explain-selection",
   REFACTOR: "claude:refactor-selection",
