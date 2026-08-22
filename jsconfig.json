@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "checkJs": false,
+    "allowJs": true,
+    "types": ["acode-plugin-types"]
+  },
+  "include": ["src/**/*", "esbuild.config.mjs", "pack-zip.js"]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://acode.app/schema/plugin/v0.1.0.json",
+  "id": "com.cr4sh3ur.claude",
+  "name": "Claude AI",
+  "main": "main.js",
+  "version": "1.0.0",
+  "readme": "readme.md",
+  "changelogs": "changelog.md",
+  "repository": "https://github.com/CR4SH3UR/Acode-Claude-Plugin.git",
+  "icon": "icon.png",
+  "files": [],
+  "minVersionCode": 290,
+  "license": "MIT",
+  "keywords": ["claude", "anthropic", "ai", "assistant", "chat", "llm", "copilot"],
+  "price": 0,
+  "permissions": [],
+  "author": {
+    "name": "cr4sh3ur",
+    "email": "dickie1719@gmail.com",
+    "github": "CR4SH3UR"
+  }
+}
