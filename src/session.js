@@ -5,9 +5,11 @@ import { BASE_SYSTEM_PROMPT } from "./constants.js";
 let cachedClient = null;
 let cachedKey = null;
 
-/** Active provider: "anthropic" (API key) or "openrouter" (OAuth sign-in). */
+/** Active provider: "anthropic" (API key), "openrouter" (OAuth sign-in), or "minimax" (NVIDIA). */
 export function getProvider() {
-  return getSetting("provider") === "openrouter" ? "openrouter" : "anthropic";
+  const provider = getSetting("provider");
+  if (provider === "openrouter" || provider === "minimax") return provider;
+  return "anthropic";
 }
 
 function anthropicClient() {
@@ -28,29 +30,46 @@ export function resetClient() {
 
 /** Whether the active provider currently has usable credentials. */
 export function isConnected() {
-  return getProvider() === "openrouter"
-    ? !!(getSetting("openrouterKey") || "").trim()
-    : !!(getSetting("apiKey") || "").trim();
+  const provider = getProvider();
+  if (provider === "openrouter")
+    return !!(getSetting("openrouterKey") || "").trim();
+  if (provider === "minimax")
+    return !!(getSetting("minimaxKey") || "").trim();
+  return !!(getSetting("apiKey") || "").trim();
 }
 
 /**
  * Connection descriptor for the active provider, or null (after warning the
  * user) when credentials are missing.
- * @returns {{provider:"anthropic",client:object}|{provider:"openrouter",key:string}|null}
+ * @returns {{provider:"anthropic",client:object}|{provider:"openrouter",key:string}|{provider:"minimax",key:string}|null}
  */
 export function requireConnection() {
   const provider = getProvider();
-  if (provider === "openrouter") {
-    const key = (getSetting("openrouterKey") || "").trim();
+  
+  if (provider === "minimax") {
+    const key = (getSetting("minimaxKey") || "").trim();
     if (!key) {
       acode.require("toast")(
-        "Sign in with OpenRouter first — run “Claude: Connect” or use the button in the chat.",
+        "Add your NVIDIA API key in settings for Minimax.",
         4000,
       );
       return null;
     }
     return { provider, key };
   }
+  
+  if (provider === "openrouter") {
+    const key = (getSetting("openrouterKey") || "").trim();
+    if (!key) {
+      acode.require("toast")(
+        "Sign in with OpenRouter first — run \"Claude: Connect\" or use the button in the chat.",
+        4000,
+      );
+      return null;
+    }
+    return { provider, key };
+  }
+  
   const client = anthropicClient();
   if (!client) {
     acode.require("toast")(

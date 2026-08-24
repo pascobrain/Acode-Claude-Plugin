@@ -7,6 +7,7 @@ export const PLUGIN_ID = plugin.id;
 export const PROVIDERS = [
   ["anthropic", "Anthropic API key"],
   ["openrouter", "OpenRouter (sign in)"],
+  ["minimax", "Minimax (NVIDIA)"],
 ];
 
 /**
@@ -19,6 +20,7 @@ export const MODELS = [
   ["claude-haiku-4-5", "Claude Haiku 4.5 (fast & cheap)"],
   ["claude-opus-4-8", "Claude Opus 4.8"],
   ["claude-fable-5", "Claude Fable 5 (most capable)"],
+  ["minimax-m3", "Minimax M3 (NVIDIA)"],
 ];
 
 /**
@@ -38,6 +40,7 @@ export const DEFAULTS = {
   provider: "anthropic",
   apiKey: "",
   openrouterKey: "",
+  minimaxKey: "",
   model: "claude-opus-5",
   maxTokens: 8192,
   extendedThinking: true,

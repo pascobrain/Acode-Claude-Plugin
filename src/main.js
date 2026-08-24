@@ -52,7 +52,7 @@ class ClaudeAIPlugin {
           text: "Provider",
           value: getSetting("provider"),
           select: PROVIDERS,
-          info: "How to reach Claude: your Anthropic API key, or sign in with OpenRouter (run “Claude: Connect”).",
+          info: "How to reach Claude: your Anthropic API key, OpenRouter (run \"Claude: Connect\"), or NVIDIA Minimax.",
         },
         {
           key: "apiKey",
@@ -60,7 +60,7 @@ class ClaudeAIPlugin {
           value: getSetting("apiKey"),
           prompt: "sk-ant-...",
           promptType: "text",
-          info: "Used when the provider is “Anthropic”. Create a key at console.anthropic.com. Stored locally on this device.",
+          info: "Used when the provider is \"Anthropic\". Create a key at console.anthropic.com. Stored locally on this device.",
           valueText: (v) => (v ? "•••• set" : "not set"),
         },
         {
@@ -69,8 +69,17 @@ class ClaudeAIPlugin {
           value: getSetting("openrouterKey"),
           prompt: "sk-or-...",
           promptType: "text",
-          info: "Set automatically after “Claude: Connect”. You can also paste an sk-or-… key here.",
+          info: "Set automatically after \"Claude: Connect\". You can also paste an sk-or-… key here.",
           valueText: (v) => (v ? "•••• connected" : "not connected"),
+        },
+        {
+          key: "minimaxKey",
+          text: "NVIDIA API key",
+          value: getSetting("minimaxKey"),
+          prompt: "Enter your NVIDIA API key...",
+          promptType: "text",
+          info: "Used when the provider is \"Minimax (NVIDIA)\". Create a key at nvidia.com. Stored locally on this device.",
+          valueText: (v) => (v ? "•••• set" : "not set"),
         },
         {
           key: "model",
@@ -110,7 +119,7 @@ class ClaudeAIPlugin {
       cb: (key, value) => {
         if (key === "maxTokens") value = Number(value) || DEFAULTS.maxTokens;
         setSetting(key, value);
-        if (key === "apiKey" || key === "provider") resetClient();
+        if (key === "apiKey" || key === "provider" || key === "minimaxKey") resetClient();
         if (key === "provider") {
           sidebar.renderModelBadge?.();
           sidebar.renderEmpty?.();
